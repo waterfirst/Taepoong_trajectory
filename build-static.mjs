@@ -2,6 +2,8 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 const source=await readFile('dist/server/index.js','utf8');
 const worker=(await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'))).default;
 let html=await (await worker.fetch(new Request('http://localhost/'))).text();
+html=html.replace("L.map('map').setView([31,131],4)","L.map('map').setView([36.2,127.8],4)");
+html=html.replace("map.fitBounds(L.latLngBounds(points.map(p=>[p.lat,p.lon])),{padding:[35,35],maxZoom:7});", "let center=L.latLng(36.2,127.8),origin=map.project(center,0),dx=0,dy=0;for(const p of points){let q=map.project([p.lat,p.lon],0);dx=Math.max(dx,Math.abs(q.x-origin.x));dy=Math.max(dy,Math.abs(q.y-origin.y));}let bounds=L.latLngBounds(map.unproject([origin.x-dx,origin.y-dy],0),map.unproject([origin.x+dx,origin.y+dy],0));let zoom=Math.min(7,map.getBoundsZoom(bounds,false,[70,70]));map.setView(center,zoom);");
 html=html.replace('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css','./vendor/leaflet.css').replace('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','./vendor/leaflet.js');
 html=html.replace("L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap contributors &copy; CARTO',maxZoom:18}).addTo(map);", "L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(map);window.addEventListener('load',()=>map.invalidateSize());");
 html=html.replace('<label for="key">기상청 API 인증키</label><input id="key" type="password" autocomplete="off" placeholder="인증키 입력"><p class="note">키는 브라우저에 저장하지 않으며 기상청 조회에만 사용합니다.</p>','<p class="note">기상청에서 미리 수집한 2020~2025년 자료를 사용합니다. 인증키 입력이 필요 없습니다.</p>');
