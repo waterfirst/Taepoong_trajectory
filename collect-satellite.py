@@ -25,10 +25,15 @@ for year in range(2020, 2026):
             continue
         stamps = []
         for row in csv.reader(io.StringIO(raw)):
-            if len(row) < 7 or row[0].strip() != "0":
+            if len(row) < 9 or row[0].strip() != "0":
                 continue
             tm = row[6].strip()
-            if len(tm) == 12 and tm.isdigit() and tm not in stamps:
+            try:
+                lat, lon = float(row[7]), float(row[8])
+            except ValueError:
+                continue
+            # 교육용 근사 범위: 위도 30~42°N, 경도 120~135°E.
+            if 30 <= lat <= 42 and 120 <= lon <= 135 and len(tm) == 12 and tm.isdigit() and tm not in stamps:
                 stamps.append(tm)
         stamps.sort()
         identity = f"{year}-{int(number)}"
