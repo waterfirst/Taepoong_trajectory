@@ -19,12 +19,21 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
+      - name: Restore satellite cache
+        id: satellite-cache
+        uses: actions/cache@v4
+        with:
+          path: public/satellite
+          key: satellite-v1-${{ hashFiles('public/data/*.json', 'collect-satellite.py') }}
       - uses: actions/setup-python@v5
+        if: steps.satellite-cache.outputs.cache-hit != 'true'
         with:
           python-version: '3.12'
       - name: Install image tools
+        if: steps.satellite-cache.outputs.cache-hit != 'true'
         run: python -m pip install Pillow
       - name: Collect satellite images
+        if: steps.satellite-cache.outputs.cache-hit != 'true'
         env:
           KMA_API_KEY: ${{ secrets.KMA_API_KEY }}
         run: python collect-satellite.py
